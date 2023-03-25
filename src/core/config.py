@@ -1,5 +1,6 @@
-from pydantic import BaseSettings
 import os
+
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -10,13 +11,20 @@ class Settings(BaseSettings):
     DATABASE_SERVER: str
     DATABASE_PORT: int
 
-    BASE_DIR: str = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    )
+    @property
+    def db_url(self) -> str:
+        user = self.DATABASE_USER
+        password = self.DATABASE_PASSWORD
+        server = self.DATABASE_SERVER
+        port = self.DATABASE_PORT
+        db = self.DATABASE_NAME
+        return f"mysql+mysqldb://{user}:{password}@{server}:{port}/{db}"
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
 
 
-settings = Settings()
+BASE_DIR: str = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)

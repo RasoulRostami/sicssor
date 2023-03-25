@@ -1,1 +1,5 @@
-#!/usr/bin/env python3
+from .config import Settings
+
+
+def get_settings() -> Settings:
+    return Settings()
