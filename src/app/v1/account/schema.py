@@ -1,8 +1,8 @@
+from datetime import date
 from typing import Optional
+from db import User
 import validators
 from pydantic import BaseModel, validator
-
-from datetime import date
 
 
 class RegisterSchema(BaseModel):
@@ -66,3 +66,20 @@ class ProfileSchema(BaseModel):
     last_name: Optional[str] = None
     birthday: Optional[date] = None
     bio: Optional[str] = None
+    avatar: Optional[str] = None
+
+    @classmethod
+    def factory(cls, user: User):
+        return cls(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            birthday=user.birthday,
+            bio=user.bio,
+            avatar=user.avatar,
+        )
+
+
+class UserSchema(ProfileSchema):
+    email: str
+    role: str
+    is_superuser: bool

@@ -7,7 +7,7 @@ settings = override_get_settings()
 login_url = "/v1/accounts/login/"
 
 
-def test_login(customer_user):
+def test_login(user_tom):
     repo = UserRepository(settings)
     user = repo.get_user_by_email("smith@yahoo.com")
     assert user.token == None

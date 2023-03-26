@@ -1,8 +1,10 @@
-from sqlalchemy.sql import exists
 from typing import Optional
-from src.core.config import Settings
-from src.db.session import get_session
 
+from sqlalchemy import select, update
+from sqlalchemy.sql import exists
+from src.core.config import Settings
+from src.db.session import get_async_session, get_session
+from sqlalchemy.exc import NoResultFound
 from ..models.user import User
 
 
@@ -12,11 +14,12 @@ class UserRepository:
 
     def __init__(self, settings: Settings) -> None:
         self.session = get_session(settings)
+        self.async_session = get_async_session(settings)
 
     def create(self, user: User) -> User:
         self.session.add(user)
         self.session.commit()
-        return user
+        return self.get_user_by_email(user.email)
 
     def is_email_exists(self, email: str) -> bool:
         if self.session.query(exists().where(User.email == email)).scalar():
@@ -42,6 +45,20 @@ class UserRepository:
         self.session.refresh(user)
         return user
 
-    def save(self, user: User, values: dict):
-        self.session.query(self.model).filter(User.id == user.id).update(values)
-        self.session.commit()
+    async def get(self, values: dict) -> Optional[User]:
+        query = select(User).filter_by(**values).limit(1)
+        result = await self._commit(query)
+        try:
+            return result.scalars().one()
+        except NoResultFound:
+            return None
+
+    async def save(self, user: User, values: dict):
+        query = update(User).where(User.id == user.id).values(values)
+        await self._commit(query=query)
+
+    async def _commit(self, query):
+        async with self.async_session() as session:
+            async with session.begin():
+                result = await session.execute(query)
+                return result

@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from src.core import get_settings
+from src.core.authentication import get_current_user
 from src.core.config import Settings
 from src.db import User
 
@@ -31,17 +32,31 @@ def register(
 
 
 @account_router.post("/login", response_model=TokenSchema, status_code=200)
-def login(
+async def login(
     settings: Annotated[Settings, Depends(get_settings)],
     login: Annotated[LoginSchema, Body()],
 ):
     service = UserServices(settings)
-    token, error = service.login(login.email, login.password)
+    token, error = await service.login(login.email, login.password)
     if error:
         raise HTTPException(status_code=422, detail=error)
     return TokenSchema(token=token)
 
 
-# @account_router.get("/profile", status_code=200, response_model=ProfileSchema)
-# def profile_detail():
-#    pass
+@account_router.get("/profile", status_code=200, response_model=ProfileSchema)
+async def profile_detail(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return ProfileSchema.factory(current_user)
+
+
+@account_router.patch("/profile", status_code=200, response_model=ProfileSchema)
+async def profile_detail(
+    current_user: Annotated[User, Depends(get_current_user)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    profile: Annotated[ProfileSchema, Body()],
+):
+    service = UserServices(settings)
+    values = profile.dict(exclude_unset=True)
+    user = await service.update(current_user, values)
+    return ProfileSchema.factory(user)

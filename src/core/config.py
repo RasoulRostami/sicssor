@@ -20,6 +20,15 @@ class Settings(BaseSettings):
         db = self.DATABASE_NAME
         return f"mysql+mysqldb://{user}:{password}@{server}:{port}/{db}"
 
+    @property
+    def async_db_url(self) -> str:
+        user = self.DATABASE_USER
+        password = self.DATABASE_PASSWORD
+        server = self.DATABASE_SERVER
+        port = self.DATABASE_PORT
+        db = self.DATABASE_NAME
+        return f"mysql+aiomysql://{user}:{password}@{server}:{port}/{db}"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

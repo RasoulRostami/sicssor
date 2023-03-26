@@ -18,7 +18,7 @@ class User(Base):
     password = Column(String(150), nullable=True)
     birthday = Column(Date(), nullable=True)
     bio = Column(Text(), nullable=True)
-    role = Column(Enum(RoleChoices))
+    role = Column(Enum(RoleChoices), default=RoleChoices.CUSTOMER)
     token = Column(String(150), nullable=True)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
