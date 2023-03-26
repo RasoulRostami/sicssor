@@ -1,5 +1,8 @@
+from typing import Optional
 import validators
 from pydantic import BaseModel, validator
+
+from datetime import date
 
 
 class RegisterSchema(BaseModel):
@@ -41,3 +44,25 @@ class RegisterSchema(BaseModel):
             if confirm_password != values["password"]:
                 raise ValueError("Confirm password is invalid.")
         return confirm_password
+
+
+class LoginSchema(BaseModel):
+    email: str
+    password: str
+
+    @validator("email")
+    def validate_email(cls, email):
+        if validators.email(email) is True:
+            return email
+        raise ValueError("Email is invalid.")
+
+
+class TokenSchema(BaseModel):
+    token: str
+
+
+class ProfileSchema(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    birthday: Optional[date] = None
+    bio: Optional[str] = None

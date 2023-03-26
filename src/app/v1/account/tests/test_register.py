@@ -59,6 +59,6 @@ def test_duplicate_email():
         },
     ],
 )
-def test_invalid_data(data):
+def test_register_invalid_data(data):
     response = client.post(url, json=data)
     assert response.status_code == 422, response.json()

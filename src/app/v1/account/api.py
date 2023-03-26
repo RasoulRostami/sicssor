@@ -28,3 +28,20 @@ def register(
         service.register(user)
         return register
     raise HTTPException(status_code=422, detail=error)
+
+
+@account_router.post("/login", response_model=TokenSchema, status_code=200)
+def login(
+    settings: Annotated[Settings, Depends(get_settings)],
+    login: Annotated[LoginSchema, Body()],
+):
+    service = UserServices(settings)
+    token, error = service.login(login.email, login.password)
+    if error:
+        raise HTTPException(status_code=422, detail=error)
+    return TokenSchema(token=token)
+
+
+# @account_router.get("/profile", status_code=200, response_model=ProfileSchema)
+# def profile_detail():
+#    pass
